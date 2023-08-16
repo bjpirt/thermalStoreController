@@ -2,17 +2,26 @@ from timeout import Timeout
 from umqtt.robust import MQTTClient  # type: ignore
 import json
 
+SOC_TOPIC = "tycoch/battery/soc"
+CMD_TOPIC = "tycoch/thermalstore/cmd"
+AC_TOPIC = "tycoch/ac"
+STATUS_TOPIC = "tycoch/thermalstore/status"
+
 
 class MQTTConnection:
     def __init__(self, config):
         self._client = MQTTClient("thermal_store", config["mqtt_address"], keepalive=100)
         self._client.connect()
         self._client.set_callback(self.handle_message)
-        self._client.subscribe("tycoch/thermalstore/cmd")
-        self._client.subscribe("tycoch/battery/soc")
+        self._client.subscribe(CMD_TOPIC)
+        self._client.subscribe(SOC_TOPIC)
+        self._client.subscribe(AC_TOPIC)
         self._battery_soc: int | None = None
+        self._ac_level: int | None = None
         self._soc_timeout = Timeout()
         self._soc_timeout.set(60)
+        self._ac_timeout = Timeout()
+        self._ac_timeout.set(60)
 
     def handle_message(self, topic, msg):
         decoded_topic = topic.decode()
@@ -20,11 +29,15 @@ class MQTTConnection:
         try:
             print(f"received {decoded_msg} on {decoded_topic}")
             parsed = json.loads(decoded_msg)
-            if decoded_topic == "tycoch/battery/soc":
+            if decoded_topic == SOC_TOPIC:
                 self._battery_soc = parsed["value"]
                 self._soc_timeout.reset()
                 print(f"Set SoC to {self._battery_soc}")
-            elif decoded_topic == "tycoch/thermalstore/cmd":
+            if decoded_topic == AC_TOPIC:
+                self._ac_level = parsed["value"]
+                self._ac_timeout.reset()
+                print(f"Set AC level to {self._ac_level}")
+            elif decoded_topic == CMD_TOPIC:
                 # Used for settings, manual control, etc
                 pass
         except Exception as e:
@@ -32,7 +45,7 @@ class MQTTConnection:
             return
 
     def publish_status(self, payload):
-        self._client.publish("tycoch/thermalstore/status", json.dumps(payload))
+        self._client.publish(STATUS_TOPIC, json.dumps(payload))
 
     def handle_subscriptions(self):
         self._client.check_msg()
@@ -44,3 +57,11 @@ class MQTTConnection:
     @property
     def battery_soc_error(self):
         return self._soc_timeout.ready or self._battery_soc == None
+
+    @property
+    def ac_level(self) -> int | None:
+        return self._ac_level if not self._ac_timeout.ready else None
+
+    @property
+    def ac_level_error(self):
+        return self._ac_timeout.ready or self._ac_level == None
