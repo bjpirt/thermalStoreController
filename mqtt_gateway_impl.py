@@ -1,3 +1,4 @@
+from mqtt_gateway import MqttGateway
 from timeout import Timeout
 from umqtt.robust import MQTTClient  # type: ignore
 import json
@@ -8,7 +9,7 @@ AC_TOPIC = "tycoch/ac"
 STATUS_TOPIC = "tycoch/thermalstore/status"
 
 
-class MQTTConnection:
+class MqttGatewayImpl(MqttGateway):
     def __init__(self, config):
         self._client = MQTTClient("thermal_store", config["mqtt_address"], keepalive=100)
         self._client.connect()
@@ -17,7 +18,7 @@ class MQTTConnection:
         self._client.subscribe(SOC_TOPIC)
         self._client.subscribe(AC_TOPIC)
         self._battery_soc: int | None = None
-        self._ac_level: int | None = None
+        self._ac_power: int | None = None
         self._soc_timeout = Timeout()
         self._soc_timeout.set(60)
         self._ac_timeout = Timeout()
@@ -34,9 +35,9 @@ class MQTTConnection:
                 self._soc_timeout.reset()
                 print(f"Set SoC to {self._battery_soc}")
             if decoded_topic == AC_TOPIC:
-                self._ac_level = parsed["value"]
+                self._ac_power = parsed["value"]
                 self._ac_timeout.reset()
-                print(f"Set AC level to {self._ac_level}")
+                print(f"Set AC level to {self._ac_power}")
             elif decoded_topic == CMD_TOPIC:
                 # Used for settings, manual control, etc
                 pass
@@ -59,9 +60,9 @@ class MQTTConnection:
         return self._soc_timeout.ready or self._battery_soc == None
 
     @property
-    def ac_level(self) -> int | None:
-        return self._ac_level if not self._ac_timeout.ready else None
+    def ac_power(self) -> int | None:
+        return self._ac_power if not self._ac_timeout.ready else None
 
     @property
-    def ac_level_error(self):
-        return self._ac_timeout.ready or self._ac_level == None
+    def ac_power_error(self):
+        return self._ac_timeout.ready or self._ac_power == None
