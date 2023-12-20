@@ -2,18 +2,20 @@ from mqtt_gateway import MqttGateway
 from timeout import Timeout
 from umqtt.robust import MQTTClient  # type: ignore
 import json
+from machine import reset
 
 SOC_TOPIC = "tycoch/battery/soc"
-CMD_TOPIC = "tycoch/thermalstore/cmd"
 AC_TOPIC = "tycoch/ac"
 
 
 class MqttGatewayImpl(MqttGateway):
     def __init__(self, config):
+        self._config = config
         self._client = MQTTClient("thermal_store", config.mqtt_address, keepalive=100)
         self._client.connect()
         self._client.set_callback(self.handle_message)
-        self._client.subscribe(CMD_TOPIC)
+        self._client.subscribe(f"{self._config.mqtt_topic_prefix}/set-config/#")
+        self._client.subscribe(f"{self._config.mqtt_topic_prefix}/reboot")
         self._client.subscribe(SOC_TOPIC)
         self._client.subscribe(AC_TOPIC)
         self._battery_soc: int | None = None
@@ -27,7 +29,6 @@ class MqttGatewayImpl(MqttGateway):
         self._full_publish_timeout = Timeout()
         self._full_publish_timeout.set(config.mqtt_full_publish_interval)
         self._last_values = {}
-        self._config = config
 
     def handle_message(self, topic, msg):
         decoded_topic = topic.decode()
@@ -43,9 +44,16 @@ class MqttGatewayImpl(MqttGateway):
                 self._ac_power = parsed["value"]
                 self._ac_timeout.reset()
                 print(f"Set AC level to {self._ac_power}")
-            elif decoded_topic == CMD_TOPIC:
-                # Used for settings, manual control, etc
-                pass
+            elif decoded_topic.startswith(f"{self._config.mqtt_topic_prefix}/set-config/"):
+                setting = decoded_topic.replace(
+                    f"{self._config.mqtt_topic_prefix}/set-config/", "")
+                print(f"Setting '{setting}' to '{parsed['value']}'")
+                self._config.set_value(setting, parsed["value"])
+                self._config.save()
+            elif decoded_topic == f"{self._config.mqtt_topic_prefix}/reboot":
+                if parsed["value"] == "reboot":
+                    print("Rebooting device")
+                    reset()
         except Exception as e:
             print(e)
             return

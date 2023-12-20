@@ -10,8 +10,6 @@ It is designed to work in a system that has Lithium Ion batteries connected to a
 
 ## To Do:
 
-- [ ] Update settings via MQTT
-- [ ] NTP Clock sync
-- [ ] Settings based on time of year
+- [x] Update settings via MQTT
 - [x] MQTT Output on change
 - [x] Persistent settings
