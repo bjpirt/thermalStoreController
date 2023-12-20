@@ -8,10 +8,12 @@ stop-mosquitto:
 
 .PHONY: upload
 upload:
+	ampy put initial_config.py
 	ampy put config.py
 	ampy put hardware_gateway_impl.py
 	ampy put hardware_gateway.py
 	ampy put occupancy_impl.py
+	ampy put occupancy.py
 	ampy put mqtt_gateway_impl.py
 	ampy put mqtt_gateway.py
 	ampy put temperature_sensor.py

@@ -6,12 +6,12 @@ import json
 SOC_TOPIC = "tycoch/battery/soc"
 CMD_TOPIC = "tycoch/thermalstore/cmd"
 AC_TOPIC = "tycoch/ac"
-STATUS_TOPIC = "tycoch/thermalstore/status"
+TOPIC_PREFIX = "tycoch/thermalstore"
 
 
 class MqttGatewayImpl(MqttGateway):
     def __init__(self, config):
-        self._client = MQTTClient("thermal_store", config["mqtt_address"], keepalive=100)
+        self._client = MQTTClient("thermal_store", config.mqtt_address, keepalive=100)
         self._client.connect()
         self._client.set_callback(self.handle_message)
         self._client.subscribe(CMD_TOPIC)
@@ -46,7 +46,8 @@ class MqttGatewayImpl(MqttGateway):
             return
 
     def publish_status(self, payload):
-        self._client.publish(STATUS_TOPIC, json.dumps(payload))
+        for topic, value in payload.items():
+            self._publish(f"/{topic}", value)
 
     def handle_subscriptions(self):
         self._client.check_msg()
@@ -66,3 +67,6 @@ class MqttGatewayImpl(MqttGateway):
     @property
     def ac_power_error(self):
         return self._ac_timeout.ready or self._ac_power == None
+
+    def _publish(self, topic: str, value):
+        self._client.publish(f"{TOPIC_PREFIX}{topic}", json.dumps({"value": value}))

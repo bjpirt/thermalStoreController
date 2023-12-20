@@ -8,4 +8,10 @@ This is MicroPython code that is designed to monitor and control a thermal store
 
 It is designed to work in a system that has Lithium Ion batteries connected to a Victron inverter charger and uses MQTT to get the current state of charge of the batteries as well as outputting the current status of the system.
 
-_Work in progress..._
+## To Do:
+
+- [ ] MQTT Output on change
+- [ ] Update settings via MQTT
+- [ ] NTP Clock sync
+- [ ] Settings based on time of year
+- [x] Persistent settings

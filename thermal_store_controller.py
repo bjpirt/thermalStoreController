@@ -18,17 +18,17 @@ class ThermalStoreController:
 
         # If the temperature is too high, turn everything off
         min_temp = min(self._hardware.tank_sensors)
-        if min_temp >= self._config["tank_temperature_cutoff"]:
+        if min_temp >= self._config.tank_temperature_cutoff:
             return {"immersion": False, "boiler": False}
 
         # If the battery is above the threshold, turn on the immersion
-        if self._mqtt.battery_soc >= self._config["battery_immersion_on_soc"]:
+        if self._mqtt.battery_soc >= self._config.battery_immersion_on_soc:
             return {"immersion": True, "boiler": False}
 
         if self._occupancy.occupied or self.heating_required:
             # Keep the tank at the minimum temperature level
-            if self._hardware.tank_sensors[2] < self._config["tank_temperature_setpoint"]:
-                if self._mqtt.battery_soc >= self._config["battery_immersion_min_soc"]:
+            if self._hardware.tank_sensors[2] < self._config.tank_temperature_setpoint:
+                if self._mqtt.battery_soc >= self._config.battery_immersion_min_soc:
                     # If we have battery capacity, use that first
                     return {"immersion": True, "boiler": False}
                 # Fall back to the boiler thermostat
@@ -36,7 +36,7 @@ class ThermalStoreController:
 
         # Fall back to no heating if not required
         state = {"boiler": False}
-        if self._mqtt.battery_soc <= self._config["battery_immersion_off_soc"]:
+        if self._mqtt.battery_soc <= self._config.battery_immersion_off_soc:
             state["immersion"] = False
         return state
 
@@ -78,4 +78,4 @@ class ThermalStoreController:
 
     @property
     def heating_required(self):
-        return self._hardware.outside_sensor <= self._config["outside_temperature_low_setpoint"]
+        return self._hardware.outside_sensor <= self._config.outside_temperature_low_setpoint

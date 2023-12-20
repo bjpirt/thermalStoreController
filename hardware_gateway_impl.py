@@ -5,14 +5,14 @@ from machine import Pin  # type: ignore
 
 class HardwareGatewayImpl(HardwareGateway):
     def __init__(self) -> None:
-        test_sensor = TemperatureSensor(18)
+        test_sensor = TemperatureSensor(16)
         self._tank_sensors = [test_sensor,
                               test_sensor,
                               test_sensor,
                               test_sensor]
         self._outside_sensor = test_sensor
         self._immersion_state = False
-        self._immersion = Pin(17, mode=Pin.OUT)
+        self._immersion = Pin(15, mode=Pin.OUT)
         self._boiler_state = False
         self._boiler = Pin(16, mode=Pin.OUT)
 

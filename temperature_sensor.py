@@ -6,7 +6,7 @@ from ds18x20 import DS18X20  # type: ignore
 
 class TemperatureSensor:
     def __init__(self, pin: int) -> None:
-        ow = onewire.OneWire(Pin(pin))
+        ow = onewire.OneWire(Pin(pin, Pin.IN, Pin.PULL_UP))
         self._sensor = DS18X20(ow)
         self._value = None
         self.setup()

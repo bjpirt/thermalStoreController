@@ -1,6 +1,6 @@
 import unittest
 from thermal_store_controller import ThermalStoreController
-from config_example import config
+from config import Config
 
 
 class FakeHardwareGateway:
@@ -41,10 +41,10 @@ class FakeOccupancy:
 
 class ThermalStoreControllerTestCase(unittest.TestCase):
     def setUp(self):
+        self.config = Config()
         self.hardware = FakeHardwareGateway()
         self.mqtt = FakeMqttGateway()
         self.occupancy = FakeOccupancy()
-        self.config = config
         self.controller = ThermalStoreController(self.config, self.mqtt, self.hardware, self.occupancy)
 
     def testSensorErrorBehaviour(self):
