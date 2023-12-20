@@ -43,11 +43,10 @@ def main():
     occupancy = OccupancyImpl(mqtt, config)
     controller = ThermalStoreController(config, mqtt, hardware, occupancy)
     while True:
-        mqtt.handle_subscriptions()
         controller.update()
-        mqtt.publish_status(controller.status)
+        mqtt.update(controller.status)
 
-        sleep(1)
+        sleep(0.1)
 
 
 if __name__ == "__main__":

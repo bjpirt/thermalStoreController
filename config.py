@@ -18,6 +18,9 @@ class Config:
         self.wifi_network = "WIFI_NETWORK"
         self.wifi_password = 'WIFI_PASSWORD'
         self.mqtt_address = "192.168.1.1"
+        self.mqtt_publish_interval = 1.0
+        self.mqtt_full_publish_interval = 60.0
+        self.mqtt_topic_prefix = ""
         self.battery_immersion_on_soc = 81
         self.battery_immersion_off_soc = 80
         self.battery_immersion_min_soc = 50

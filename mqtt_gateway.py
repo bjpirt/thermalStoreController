@@ -2,9 +2,6 @@ class MqttGateway:
     def publish_status(self, payload):
         pass
 
-    def handle_subscriptions(self):
-        pass
-
     @property
     def battery_soc(self) -> int | None:
         pass

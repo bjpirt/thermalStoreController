@@ -51,17 +51,17 @@ class ThermalStoreController:
     @property
     def status(self):
         output = {"error": int(self.error),
-                  "soc_error": int(self._mqtt.battery_soc_error),
-                  "sensor_error": int(self._hardware.sensor_error),
-                  "occupancy_error": int(self.occupancy_error)}
+                  "error/soc": int(self._mqtt.battery_soc_error),
+                  "error/sensor": int(self._hardware.sensor_error),
+                  "error/occupancy": int(self.occupancy_error)}
 
         tank_sensor_errors = self._hardware.tank_sensor_errors
         for (index, sensor) in enumerate(self._hardware.tank_sensors):
             if not tank_sensor_errors[index]:
-                output[f"tank_temp{index+1}"] = sensor
+                output[f"temperature/tank/{index}"] = sensor
 
         if not self._hardware.outside_sensor_error:
-            output["outside_temp"] = self._hardware.outside_sensor
+            output["temperature/outside"] = self._hardware.outside_sensor
 
         output["immersion"] = int(self._hardware.immersion)
         output["boiler"] = int(self._hardware.boiler)

@@ -6,7 +6,6 @@ import json
 SOC_TOPIC = "tycoch/battery/soc"
 CMD_TOPIC = "tycoch/thermalstore/cmd"
 AC_TOPIC = "tycoch/ac"
-TOPIC_PREFIX = "tycoch/thermalstore"
 
 
 class MqttGatewayImpl(MqttGateway):
@@ -23,6 +22,12 @@ class MqttGatewayImpl(MqttGateway):
         self._soc_timeout.set(60)
         self._ac_timeout = Timeout()
         self._ac_timeout.set(60)
+        self._publish_timeout = Timeout()
+        self._publish_timeout.set(config.mqtt_publish_interval)
+        self._full_publish_timeout = Timeout()
+        self._full_publish_timeout.set(config.mqtt_full_publish_interval)
+        self._last_values = {}
+        self._config = config
 
     def handle_message(self, topic, msg):
         decoded_topic = topic.decode()
@@ -45,11 +50,23 @@ class MqttGatewayImpl(MqttGateway):
             print(e)
             return
 
-    def publish_status(self, payload):
-        for topic, value in payload.items():
-            self._publish(f"/{topic}", value)
+    def update(self, payload):
+        self._handle_subscriptions()
+        if self._full_publish_timeout.ready:
+            self._full_publish_timeout.reset()
+            self._last_values = {}
 
-    def handle_subscriptions(self):
+        if self._publish_timeout.ready:
+            self._publish_timeout.reset()
+            for topic, value in payload.items():
+                self._publish(topic, value)
+            self._update_config()
+
+    def _update_config(self):
+        for topic, value in self._config.get_dict().items():
+            self._publish(f"config/{topic}", value)
+
+    def _handle_subscriptions(self):
         self._client.check_msg()
 
     @property
@@ -68,5 +85,12 @@ class MqttGatewayImpl(MqttGateway):
     def ac_power_error(self):
         return self._ac_timeout.ready or self._ac_power == None
 
+    def _should_publish(self, topic: str, value) -> bool:
+        if topic not in self._last_values or value != self._last_values[topic]:
+            self._last_values[topic] = value
+            return True
+        return False
+
     def _publish(self, topic: str, value):
-        self._client.publish(f"{TOPIC_PREFIX}{topic}", json.dumps({"value": value}))
+        if self._should_publish(topic, value):
+            self._client.publish(f"{self._config.mqtt_topic_prefix}/{topic}", json.dumps({"value": value}))
