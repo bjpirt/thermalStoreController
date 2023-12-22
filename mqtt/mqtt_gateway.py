@@ -1,9 +1,12 @@
+from typing import Union
+
+
 class MqttGateway:
     def publish_status(self, payload):
         pass
 
     @property
-    def battery_soc(self) -> int | None:
+    def battery_soc(self) -> Union[int, None]:  # pylint: disable=unsubscriptable-object
         pass
 
     @property
@@ -11,7 +14,7 @@ class MqttGateway:
         pass
 
     @property
-    def ac_power(self) -> int | None:
+    def ac_power(self) -> Union[int, None]:  # pylint: disable=unsubscriptable-object
         pass
 
     @property

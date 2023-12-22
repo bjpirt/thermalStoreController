@@ -1,11 +1,13 @@
-from hardware_gateway_impl import HardwareGatewayImpl
-from mqtt_gateway_impl import MqttGatewayImpl
 from time import sleep
-import network  # type: ignore
-import machine  # type: ignore
+try:
+    import network  # type: ignore
+    import machine  # type: ignore
+except ImportError:
+    pass
+from hardware import HardwareGatewayImpl
+from mqtt import MqttGatewayImpl
 from config import Config
-from occupancy_impl import OccupancyImpl
-from thermal_store_controller import ThermalStoreController
+from thermal_store_controller import OccupancyImpl, ThermalStoreController
 
 
 def setup_wifi(config):
@@ -19,7 +21,7 @@ def setup_wifi(config):
         print("WiFi Ready")
 
 
-def setup_ethernet(config):
+def setup_ethernet():
     nic = network.LAN(
         mdc=machine.Pin(23),
         mdio=machine.Pin(18),
@@ -37,7 +39,7 @@ def setup_ethernet(config):
 def main():
     config = Config()
     setup_wifi(config)
-    # setup_ethernet(config)
+    # setup_ethernet()
     hardware = HardwareGatewayImpl()
     mqtt = MqttGatewayImpl(config)
     occupancy = OccupancyImpl(mqtt, config)

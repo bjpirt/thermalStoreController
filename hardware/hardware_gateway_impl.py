@@ -1,6 +1,9 @@
-from hardware_gateway import HardwareGateway
-from temperature_sensor import TemperatureSensor
-from machine import Pin  # type: ignore
+from .hardware_gateway import HardwareGateway
+from .temperature_sensor import TemperatureSensor
+try:
+    from machine import Pin  # type: ignore
+except ImportError:
+    pass
 
 
 class HardwareGatewayImpl(HardwareGateway):
@@ -12,9 +15,9 @@ class HardwareGatewayImpl(HardwareGateway):
                               test_sensor]
         self._outside_sensor = test_sensor
         self._immersion_state = False
-        self._immersion = Pin(15, mode=Pin.OUT)
+        self._immersion_pin = Pin(15, mode=Pin.OUT)
         self._boiler_state = False
-        self._boiler = Pin(16, mode=Pin.OUT)
+        self._boiler_pin = Pin(16, mode=Pin.OUT)
 
     def read_sensors(self):
         for sensor in self._tank_sensors:
@@ -28,16 +31,17 @@ class HardwareGatewayImpl(HardwareGateway):
     @immersion.setter
     def immersion(self, state: bool) -> None:
         self._immersion_state = state
-        self._immersion.value(state)
+        self._immersion_pin.value(state)
 
     @property
     def boiler(self):
         return self._boiler_state
 
+    @boiler.setter
     def boiler(self, state: bool) -> None:
         self._boiler_state = state
         # The boiler control is inverted for fail-safe control by the thermostat
-        self._boiler.value(not state)
+        self._boiler_pin.value(not state)
 
     @property
     def sensor_error(self):

@@ -1,7 +1,6 @@
-from hardware_gateway import HardwareGateway
-from mqtt_gateway import MqttGateway
-from occupancy import Occupancy
-from timeout import Timeout
+from hardware import HardwareGateway
+from mqtt import MqttGateway
+from .occupancy import Occupancy
 
 
 class ThermalStoreController:

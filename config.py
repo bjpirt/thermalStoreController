@@ -1,5 +1,8 @@
-from persistent_config import PersistentConfig
-from initial_config import config
+from lib import PersistentConfig
+try:
+    from initial_config import config   # type: ignore
+except ImportError:
+    config = {}
 
 
 class Config(PersistentConfig):

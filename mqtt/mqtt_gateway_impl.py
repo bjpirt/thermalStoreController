@@ -1,8 +1,14 @@
-from mqtt_gateway import MqttGateway
-from timeout import Timeout
-from umqtt.robust import MQTTClient  # type: ignore
+# pylint: disable=unsubscriptable-object
+
+from typing import Union
+from .mqtt_gateway import MqttGateway
+from lib.timeout import Timeout
+try:
+    from machine import reset  # type: ignore
+    from umqtt.robust import MQTTClient  # type: ignore
+except ImportError:
+    pass
 import json
-from machine import reset
 
 SOC_TOPIC = "tycoch/battery/soc"
 AC_TOPIC = "tycoch/ac"
@@ -18,8 +24,8 @@ class MqttGatewayImpl(MqttGateway):
         self._client.subscribe(f"{self._config.mqtt_topic_prefix}/reboot")
         self._client.subscribe(SOC_TOPIC)
         self._client.subscribe(AC_TOPIC)
-        self._battery_soc: int | None = None
-        self._ac_power: int | None = None
+        self._battery_soc: Union[int, None] = None
+        self._ac_power: Union[int, None] = None
         self._soc_timeout = Timeout()
         self._soc_timeout.set(60)
         self._ac_timeout = Timeout()
@@ -54,7 +60,7 @@ class MqttGatewayImpl(MqttGateway):
                 if parsed["value"] == "reboot":
                     print("Rebooting device")
                     reset()
-        except Exception as e:
+        except json.decoder.JSONDecodeError as e:
             print(e)
             return
 
@@ -78,20 +84,20 @@ class MqttGatewayImpl(MqttGateway):
         self._client.check_msg()
 
     @property
-    def battery_soc(self) -> int | None:
+    def battery_soc(self) -> Union[int, None]:
         return self._battery_soc if not self._soc_timeout.ready else None
 
     @property
     def battery_soc_error(self):
-        return self._soc_timeout.ready or self._battery_soc == None
+        return self._soc_timeout.ready or self._battery_soc is None
 
     @property
-    def ac_power(self) -> int | None:
+    def ac_power(self) -> Union[int, None]:
         return self._ac_power if not self._ac_timeout.ready else None
 
     @property
     def ac_power_error(self):
-        return self._ac_timeout.ready or self._ac_power == None
+        return self._ac_timeout.ready or self._ac_power is None
 
     def _should_publish(self, topic: str, value) -> bool:
         if topic not in self._last_values or value != self._last_values[topic]:
