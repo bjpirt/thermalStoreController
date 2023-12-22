@@ -8,9 +8,11 @@ stop-mosquitto:
 
 .PHONY: upload
 upload:
+	rm -rf ./*/__pycache__
 	ampy put hardware
 	ampy put lib
 	ampy put mqtt
+	ampy put net
 	ampy put thermal_store_controller
 	ampy put config.py
 	ampy put initial_config.py
