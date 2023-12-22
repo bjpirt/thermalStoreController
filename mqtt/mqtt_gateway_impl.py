@@ -18,12 +18,7 @@ class MqttGatewayImpl(MqttGateway):
     def __init__(self, config):
         self._config = config
         self._client = MQTTClient("thermal_store", config.mqtt_address, keepalive=100)
-        self._client.connect()
         self._client.set_callback(self.handle_message)
-        self._client.subscribe(f"{self._config.mqtt_topic_prefix}/set-config/#")
-        self._client.subscribe(f"{self._config.mqtt_topic_prefix}/reboot")
-        self._client.subscribe(SOC_TOPIC)
-        self._client.subscribe(AC_TOPIC)
         self._battery_soc: Union[int, None] = None
         self._ac_power: Union[int, None] = None
         self._soc_timeout = Timeout()
@@ -35,6 +30,13 @@ class MqttGatewayImpl(MqttGateway):
         self._full_publish_timeout = Timeout()
         self._full_publish_timeout.set(config.mqtt_full_publish_interval)
         self._last_values = {}
+
+    def connect(self):
+        self._client.connect()
+        self._client.subscribe(f"{self._config.mqtt_topic_prefix}/set-config/#")
+        self._client.subscribe(f"{self._config.mqtt_topic_prefix}/reboot")
+        self._client.subscribe(SOC_TOPIC)
+        self._client.subscribe(AC_TOPIC)
 
     def handle_message(self, topic, msg):
         decoded_topic = topic.decode()

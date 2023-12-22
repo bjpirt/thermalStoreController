@@ -7,9 +7,3 @@ This is MicroPython code that is designed to monitor and control a thermal store
 - Enable or disable the thermostat control for a gas boiler
 
 It is designed to work in a system that has Lithium Ion batteries connected to a Victron inverter charger and uses MQTT to get the current state of charge of the batteries as well as outputting the current status of the system.
-
-## To Do:
-
-- [x] Update settings via MQTT
-- [x] MQTT Output on change
-- [x] Persistent settings
