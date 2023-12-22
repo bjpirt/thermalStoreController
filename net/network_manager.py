@@ -22,7 +22,7 @@ class NetworkManager:
         while not self.is_connected:
             self.update()
             sleep(0.1)
-        print(f"Network is connected ({self.type})")
+        print(f"Network is connected with {self.type} IP: {self.ip}")
 
     def update(self):
         if not self.is_connected:
