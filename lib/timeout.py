@@ -2,6 +2,7 @@ import time
 
 
 class Timeout:
+    # pylint: disable=E1101
     def __init__(self) -> None:
         self.__ready_time: int = -1
         self.__last_interval: float

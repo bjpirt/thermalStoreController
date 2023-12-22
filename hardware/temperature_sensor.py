@@ -1,7 +1,10 @@
-from timeout import Timeout
-from machine import Pin  # type: ignore
-import onewire  # type: ignore
-from ds18x20 import DS18X20  # type: ignore
+from lib import Timeout
+try:
+    from machine import Pin  # type: ignore
+    import onewire  # type: ignore
+    from ds18x20 import DS18X20  # type: ignore
+except ImportError:
+    pass
 
 
 class TemperatureSensor:
@@ -16,7 +19,7 @@ class TemperatureSensor:
     def setup(self) -> None:
         self._roms = self._sensor.scan()
 
-    def read(self) -> float:
+    def read(self) -> None:
         if len(self._roms) > 0:
             try:
                 self._sensor.convert_temp()

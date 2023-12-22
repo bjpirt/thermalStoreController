@@ -14,6 +14,7 @@ class HardwareGateway:
     def boiler(self):
         pass
 
+    @boiler.setter
     def boiler(self, state: bool) -> None:
         pass
 

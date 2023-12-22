@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Union
 
 
 def exists(filename: str) -> bool:
@@ -11,7 +12,10 @@ def exists(filename: str) -> bool:
 
 
 class PersistentConfig:
-    def __init__(self, initial_config={}, file="config.json"):
+    # pylint: disable=unsubscriptable-object
+    def __init__(self, initial_config: Union[None, dict] = None, file="config.json"):
+        if initial_config is None:
+            initial_config = {}
         self.__file = file
 
         self.update(initial_config)
